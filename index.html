@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="'width=device-width, initial-scale=1.0">
+        <title>Конвертер величин</title>
+
+        <style>
+
+        </style>
+    </head>
+    <body>
+
+        <div class="card">
+            <h1>🔁 Конвертер</h1>
+
+            <div class="tabs">
+                {% for code, data in units_data.items() %}
+                    <a href="/?category={{ code }}" 
+                    class="tab {{ 'active' if current_cat == code else '' }}">
+                    {{ data['name'] }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="category" value="{{ current_cat }}">
+
+                <div class="form-grid">
+                    
+                    <div>
+                        <label>Введите значение:</label>
+                        <input type="number" step="any" name="amount" value="{{ amount }}" required placeholder="Например: 100">
+                    </div>
+
+                    <div class="units-row">
+                        <div class="unit-box">
+                            <label>Из:</label>
+                            <select name="unit_from">
+                                {% for code, u in units_data[current_cat]['units'].items() %}
+                                    <option value="{{ code }}" {{ 'selected' if unit_from == code else '' }}>
+                                        {{ u['name'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" name="action" value="swap" class="swap-btn" title="Поменять местами">
+                            ⇅
+                        </button>
+
+                        <div class="unit-box">
+                            <label>В:</label>
+                            <select name="unit_to">
+                                {% for code, u in units_data[current_cat]['units'].items() %}
+                                    <option value="{{ code }}" {{ 'selected' if unit_to == code else '' }}>
+                                        {{ u['name'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" name="action" value="convert" class="action-btn">
+                        Рассчитать
+                    </button>
+                </div>
+            </form>
+
+            {% if result %}
+            <div class="result-box">
+                <div class="res-main">{{ result }}</div>
+                <div class="res-sub">{{ explanation }}</div>
+            </div>
+            {% endif %}
+
+            {% if history %}
+            <div class="history">
+                <h3>История вычислений</h3>
+                <ul>
+                    {% for item in history %}
+                        <li>
+                            <span>{{ item.from_val }}</span>
+                            <span style="color: var(--text-sec);">→</span>
+                            <span style="font-weight: bold;">{{ item.to_val }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </body>
+</html>
