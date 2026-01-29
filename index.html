@@ -2,11 +2,220 @@
 <html lang="ru">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="'width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Конвертер величин</title>
 
         <style>
+            /* --- НАСТРОЙКИ ДИЗАЙНА (CSS) --- */
 
+            /* Цветовые переменные (Светлая тема по умолчанию) */
+            :root {
+                --bg-color: #f0f2f5;
+                --card-bg: #ffffff;
+                --text-main: #2d3748;
+                --text-sec: #718096;
+                --accent: #3b82f6;      /* Синий цвет */
+                --accent-hover: #2563ed;
+                --border: #e2e8f0;
+                --input-bg: #f7fafc;
+                --result-bg: #eff6ff;
+                --result-border: #bfdbfe;
+                --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Автоматическая темная тема (если включена на устройстве) */
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg-color: #1a202c;
+                    --card-bg: #2d3748;
+                    --text-main: #f7fafc;
+                    --text-sec: #a0aec0;
+                    --accent: #63b3ed;      
+                    --accent-hover: #4299e1;
+                    --border: #4a5568;
+                    --input-bg: #171923;
+                    --result-bg: #2c5282;
+                    --result-border: #4299e1;
+                    --shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+                }
+            }
+
+            /* Сброс отступов */
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                background-color: var(--bg-color);
+                color: var(--text-main);
+                min-height: 100vh;
+                display: flex;      /* Центрирование */
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+
+            /* Карточка приложения */
+            .card {
+                background: var(--card-bg);
+                width: 100%;
+                max-width: 480px;       /* Ограничение ширины */
+                padding: 35px;
+                border-radius: 24px;
+                box-shadow: var(--shadow);
+            }
+
+            h1 {
+                text-align: center;
+                margin-bottom: 25px;
+                font-size: 26px;
+                font-weight: 800;
+            }
+
+            /* Вкладка категорий */
+            .tabs {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;   /* Прокрутка на мобильных */
+                padding-bottom: 12px;
+                margin-bottom: 25px;
+                border-bottom: 1px solid var(--border);
+                scrollbar-width: none; /* Скрыть скроллбар (Firefox) */
+            }
+            .tabs::-webkit-scrollbar { display: none; } /*Скрыть скроллбар (Chrome) */
+
+            .tab {
+                text-decoration: none;
+                color: var(--text-sec);
+                padding: 8px 16px;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                white-space: nowrap;
+                transition: all 0.2s ease;
+                background-color: transparent;
+            }
+
+            .tab:hover {background: var(--input-bg); }
+
+            /* Активная вкладка */
+            .tab.active {
+                background: var(--accent);
+                color: white;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            /* Сетка формы */
+            .form-grid {display: grid; gap: 20px; }
+
+            label {
+                font-size: 13px;
+                color: var(--text-sec);
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            /* Поля ввода */
+            input, select {
+                width: 100%;
+                padding: 14px;
+                background: var(--input-bg);
+                border: 2px solid var(--border);
+                border-radius: 12px;
+                color: var(--text-main);
+                font-size: 16px;
+                outline: none;
+                transition: border-color 0.2s;
+                appearance: none; /* Убрать стандартные стрелки браузера */
+            }
+
+            input:focus, select:focus { border-color: var(--accent); }
+
+            /* Ряд выбора единиц (Form -> Swap -> To) */
+            .units-row {
+                display: flex;
+                align-items: flex-end;
+                gap: 12px;
+            }
+
+            .unit-box { flex: 1; position: relative; }
+
+            /* Добавляем кастомную стрелочку для селектов */
+            .unit-box::after {
+                content: "▼";
+                font-size: 10px;
+                position: absolute;
+                right: 14px;
+                top: 42px; /* Подстройка под высоту label */
+                color: var(--text-sec);
+                pointer-events: none;
+            }
+
+            /* Кнопка смены мест (Swap) */
+            .swap-btn {
+                background: var(--input-bg);
+                border: 2px solid var(--border);
+                color: var(--accent);
+                width: 48px; height: 48px;
+                border-radius: 12px;
+                cursor: pointer;
+                font-size: 20px;
+                flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center;
+                transition: all 0.2s;
+            }
+            .swap-btn:hover {
+                border-color: var(--accent);
+                background-color: var(--bg-color);
+            }
+
+            /* Главная кнопка действия */
+            .action-btn {
+                width: 100%;
+                padding: 16px;
+                background: var(--accent);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: 5px;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .action-btn:hover {background: var(--accent-hover); }
+            .action-btn:active { transform: scale(0.98); }
+
+            /* Блок результата */
+            .result-box {
+                margin-top: 30px;
+                background: var(--result-bg);
+                padding: 25px;
+                border-radius: 16px;
+                text-align: center;
+                border: 1px dashed var(--result-border);
+                animation: fadeIn 0.4s ease;
+            }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to {opacity: 1; transform: translateY(0); } }
+
+            .res-main { font-size: 28px; font-weight: 800; word-break: break-word; color: var(--accent); }
+            .res-sub { font-size: 15px; color: var(--text-sec); margin-top: 8px; }
+
+            /* История */
+            .history {margin-top: 35px; border-top: 1px solid var(--border); padding-top: 20px; }
+            .history h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sec); margin-bottom: 15px; }
+            .history ul { list-style: none; }
+
+            .history li {
+                font-size: 14px;
+                padding: 12px;
+                background: var(--input-bg);
+                border-radius: 8px;
+                margin-bottom: 8px;
+                display: flex; justify-content: space-between;
+                color: var(--text-main);
+            }
         </style>
     </head>
     <body>
@@ -38,7 +247,7 @@
                             <label>Из:</label>
                             <select name="unit_from">
                                 {% for code, u in units_data[current_cat]['units'].items() %}
-                                    <option value="{{ code }}" {{ 'selected' if unit_from == code else '' }}>
+                                    <option value="{{ code }}" {% if unit_from is equalto code %}selected{% endif %}>
                                         {{ u['name'] }}
                                     </option>
                                 {% endfor %}
@@ -53,7 +262,7 @@
                             <label>В:</label>
                             <select name="unit_to">
                                 {% for code, u in units_data[current_cat]['units'].items() %}
-                                    <option value="{{ code }}" {{ 'selected' if unit_to == code else '' }}>
+                                    <option value="{{ code }}" {% if unit_from is equalto code %}selected{% endif %}>
                                         {{ u['name'] }}
                                     </option>
                                 {% endfor %}
