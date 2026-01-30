@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    
+    <style>
+        /* Переменные и сброс */
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563ed;
+            --bg-page: #f0f2f5;
+            --bg-card: #ffffff;
+            --bg-input: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-page: #0f172a;
+                --bg-card: #1e293b;
+                --bg-input: #334155;
+                --text-main: #f1f5f9;
+                --text-muted: #94a3b8;
+                --border-color: #334155;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* Основной контейнер */
+        .converter-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .app-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* Вкладки навигации */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+        .nav-link:hover { background: var(--bg-input); }
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Элементы формы */
+        .input-group { margin-bottom: 1.25rem; }
+        
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary-color); }
+
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        .btn-swap {
+            height: 48px;
+            width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+        .btn-swap:hover {
+            border-color: var(--primary-color);
+            background: var(--bg-card);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        /* Раздел результатов */
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(59, 130, 246, 0.1); /* прозрачный синий */
+            border: 1px dashed var(--primary-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-value { font-size: 1.75rem; font-weight: 800; color: var(--primary-color); }
+        .result-text { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+        /* История */
+        .history-section {
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+        .history-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .history-list { list-style: none; }
+        .history-item {
+            font-size: 0.9rem;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .arrow-icon { color: var(--text-muted); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <main class="converter-card">
+        <header>
+            <h1 class="app-title">🔁 Конвертер</h1>
+        </header>
+        
+        <nav class="nav-tabs">
+            <a href="/?category=length" class="nav-link" id="nav-length">📏 Длина</a>
+            <a href="/?category=weight" class="nav-link" id="nav-weight">⚖️ Вес</a>
+            <a href="/?category=temperature" class="nav-link" id="nav-temperature">🌡️ Температура</a>
+            <a href="/?category=volume" class="nav-link" id="nav-volume">🧴 Объем</a>
+        </nav>
+        
+        <form method="POST">
+            <input type="hidden" name="category" value="{{ current_cat }}">
+            
+            <div class="input-group">
+                <label for="amount">Значение</label>
+                <input type="number" step="any" id="amount" name="amount" value="{{ amount }}" required placeholder="0.00">
+            </div>
+            
+            <div class="converter-grid">
+                <div>
+                    <label>Из</label>
+                    <select name="unit_from">
+                        {{ unit_from_options }}
+                    </select>
+                </div>
+                
+                <button type="submit" name="action" value="swap" class="btn-swap" title="Поменять местами">
+                    ⇅
+                </button>
+                
+                <div>
+                    <label>В</label>
+                    <select name="unit_to">
+                        {{ unit_to_options }}
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" name="action" value="convert" class="btn-primary">
+                Рассчитать
+            </button>
+        </form>
+        
+        {% if result %}
+        <div class="result-container">
+            <div class="result-value">{{ result }}</div>
+            <div class="result-text">{{ explanation }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="history-section">
+            <h3 class="history-title">Последние вычисления</h3>
+            <ul class="history-list">
+                {% for item in history %}
+                <li class="history-item">
+                    <span>{{ item.from_val }}</span>
+                    <span class="arrow-icon">➝</span>
+                    <span>{{ item.to_val }}</span>
+                </li>
+                {% else %}
+                <li class="history-item" style="justify-content: center; color: var(--text-muted);">
+                    История пуста
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Простой скрипт для выделения активной вкладки
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentCat = "{{ current_cat }}";
+            const activeTab = document.getElementById('nav-' + currentCat);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
