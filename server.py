@@ -155,6 +155,21 @@ class RequestHandler(BaseHTTPRequestHandler):
     # В продакшене здесь была бы БД
     request_history: List[Dict[str, str]] = []
 
+    def log_message(self, format, *args):
+        # Переопределяем стандартный метод логирования
+        log_entry = "%s - - [%s] %s\n" % (
+            self.client_address[0],
+            self.log_date_time_string(),
+            format % args
+        )
+
+        # Вывод в консоль (чтобы вы видели, что происходит)
+        sys.stderr.write(log_entry)
+
+        # Запись в файл (добавляем в конец файла)
+        with open("responses.log", "a", encoding="utf-8") as f:
+            f.write(log_entry)
+    
     def _get_options_html(self, category: str, selected: str) -> str:
         """Генерация <option> тегов."""
         if category not in UNITS_CONFIG:
